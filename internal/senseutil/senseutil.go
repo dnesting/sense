@@ -25,7 +25,11 @@ func DumpRequest(log *log.Logger, r *http.Request) {
 }
 
 func DumpResponse(log *log.Logger, r *http.Response) {
-	bytes, err := httputil.DumpResponse(r, true)
+	wantBody := true
+	if r.StatusCode < http.StatusOK {
+		wantBody = false
+	}
+	bytes, err := httputil.DumpResponse(r, wantBody)
 	if err != nil {
 		log.Println("error dumping response:", err)
 	} else {

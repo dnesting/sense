@@ -27,7 +27,7 @@ func main() {
 	httpClient := http.DefaultClient
 	if *flagDebug {
 		// enable HTTP client logging
-		httpClient = sense.SetDebug(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile), httpClient)
+		httpClient = sense.SetDebug(log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds), httpClient)
 	}
 
 	clients, err := sensecli.CreateClients(ctx,
