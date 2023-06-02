@@ -1,0 +1,503 @@
+openapi: 3.0.2
+info:
+  title: sense.com API
+  description: |
+    This is an unofficial, unsupported specification for api.sense.com based on
+    watching the network traffic.  This is not created or sponsored by Sense,
+    and may change or break at any time.
+  version: 0.0.1
+
+servers:
+- url: https://api.sense.com/apiservice/api/v1
+
+# paramters
+# schemas
+# responses
+# operations
+
+components:
+  schemas:
+
+    error:
+      type: object
+      properties:
+        status:
+          type: string
+        error_reason:
+          type: string
+
+    # user
+    hello:
+      type: object
+      properties:
+        authorized:
+          type: boolean
+        account_id:
+          type: integer
+        access_token:
+          type: string
+          format: password
+        monitors:
+          type: array
+          items:
+            $ref: '#/components/schemas/monitor'
+        refresh_token:
+          type: string
+          format: password
+        settings:
+          $ref: '#/components/schemas/user_settings'
+        user_id:
+          type: integer
+        bridge_server:
+          type: string
+        date_created:
+          type: string
+          format: date-time
+        totp_enabled:
+          type: boolean
+        ab_cohort:
+          type: string
+ 
+    notification_settings:
+      type: object
+      properties:
+        new_named_device_push:
+          type: boolean
+        new_named_device_email:
+          type: boolean
+        monitor_offline_push:
+          type: boolean
+        monitor_offline_email:
+          type: boolean
+        monitor_monthly_email:
+          type: boolean
+        always_on_change_push:
+          type: boolean
+        comparison_change_push:
+          type: boolean
+        new_peak_push:
+          type: boolean
+        new_peak_email:
+          type: boolean
+        monthly_change_push:
+          type: boolean
+        weekly_change_push:
+          type: boolean
+        daily_change_push:
+          type: boolean
+        generator_on_push:
+          type: boolean
+        generator_off_push:
+          type: boolean
+        time_of_use:
+          type: boolean
+        grid_outage_push:
+          type: boolean
+        grid_restored_push:
+          type: boolean
+        relay_update_available_push:
+          type: boolean
+        relay_update_installed_push:
+          type: boolean
+  
+    user_settings:
+      type: object
+      properties:
+        version:
+          type: integer
+        user_id:
+          type: integer
+        settings:
+          type: object
+          properties:
+            notifications:
+              type: object
+              additionalProperties:
+                $ref: "#/components/schemas/notification_settings"
+            labs_enabled:
+              type: boolean
+    # device
+    device:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+        tags:
+          $ref: '#/components/schemas/device_tags'
+#    device_peer_name:
+#      type: object
+#      properties:
+#        Name:
+#          type: string
+#        UserDeviceType:
+#          type: string
+#        Percent:
+#          type: number
+#          format: float
+#        Icon:
+#          type: string
+#        UserDeviceTypeDisplayString:
+#          type: string
+    device_tags:
+      type: object
+      additionalProperties: {}
+#      properties:
+#        Alertable:
+#          type: boolean
+#        AlwaysOn:
+#          type: boolean
+#        DateCreated:
+#          type: string
+#          format: date-time
+#        DateFirstUsage:
+#          type: string
+#          format: date
+#        DefaultUserDeviceType:
+#          type: string
+#        DeployToMonitor:
+#          type: boolean
+#        DeviceListAllowed:
+#          type: boolean
+#        Make:
+#          type: string
+#        MergeId:
+#          type: string
+#        ModelCreatedVersion:
+#          type: string
+#        ModelUpdatedVersion:
+#          type: string
+#        name_useredit:
+#          type: boolean
+#        OriginalName:
+#          type: string
+#        PreselectionIndex:
+#          type: integer
+#        PeerNames:
+#          type: array
+#          items:
+#            $ref: "#/components/schemas/device_peer_name"
+#        Pending:
+#          type: boolean
+#        PreselectionIndex:
+#          type: integer
+#        Revoked:
+#          type: boolean
+#        TimelineAllowed:
+#          type: boolean
+#        TimelineDefault:
+#          type: boolean
+#        Type:
+#          type: string
+#        UserDeletable:
+#          type: boolean
+#        UserDeviceType:
+#          type: string
+#        UserDeviceTypeDisplayString:
+#          type: string
+#        UserEditable:
+#          type: boolean
+#        UserEditableMeta:
+#          type: boolean
+#        UserMergeable:
+#          type: boolean
+#        UserShowBubble:
+#          type: boolean
+#        UserShowInDeviceList:
+#          type: boolean
+
+    monitor_attributes:
+      type: object
+      properties:
+        id:
+          type: integer
+        name: {}
+        state: {}
+        cost:
+          type: number
+          format: float
+        sell_back_rate:
+          type: number
+          format: float
+        user_set_cost:
+          type: boolean
+        cycle_start: {}
+        basement_type:
+          type: string
+        home_size_type:
+          type: string
+        home_type:
+          type: string
+        number_of_occupants:
+          type: string
+        occupancy_type:
+          type: string
+        year_built_type:
+          type: string
+        basement_type_key: {}
+        home_size_type_key: {}
+        home_type_key: {}
+        occupancy_type_key: {}
+        year_built_type_key: {}
+        postal_code:
+          type: string
+        electricity_cost: {}
+        show_cost:
+          type: boolean
+        tou_enabled:
+          type: boolean
+        solar_tou_enabled:
+          type: boolean
+        power_region:
+          type: string
+        to_grid_threshold: {}
+        panel: {}
+        user_set_sell_back_rate:
+          type: boolean
+
+    monitor:
+      type: object
+      properties:
+        id:
+          type: integer
+        serial_number:
+          type: string
+        time_zone:
+          type: string
+        solar_connected:
+          type: boolean
+        solar_configured:
+          type: boolean
+        online:
+          type: boolean
+        attributes:
+          $ref: "#/components/schemas/monitor_attributes"
+        signal_check_completed_time:
+          type: string
+          format: date-time
+        data_sharing:
+          type: array
+          items: {}
+        ethernet_supported:
+          type: boolean
+        aux_ignore:
+          type: boolean
+        aux_port:
+          type: string
+        hardware_type:
+          type: string
+        zigbee_supported:
+          type: boolean
+
+
+paths:
+  # public
+  /public/monitors/environments:
+    #$ref: 'schemas/public.yaml#/components/paths/environments'
+    get:
+      operationId: GetEnvironments
+      description: 'Get sense.com server environments'
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    environment: 
+                      type: string
+                    client_bridgelink_url:
+                      type: string
+                    api_url:
+                      type: string
+                    display_name:
+                      type: string
+        default:
+          description: presumed error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+  # user
+  /authenticate:
+    #$ref: 'schemas/user.yaml#/components/paths/authenticate'
+    post:
+      operationId: Authenticate
+      description: 'Authenticate the user'
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                totp:
+                  type: string
+                mfa_token:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/hello'
+
+        '401':
+          description: Authentication Needed
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: "#/components/schemas/error"
+                - type: object
+                  properties:
+                    mfa_token:
+                      type: string
+
+        default:
+          description: presumed error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+                    
+  /renew:
+    post:
+      operationId: RenewAuthToken
+      description: Renew authentication token
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                refresh_token:
+                  type: string
+                  format: password
+                is_access_token:
+                  type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                    format: password
+                  expires:
+                    type: string
+                    format: date-time
+
+        default:
+          description: presumed error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+
+#  /users/{user_id}:
+#    $ref: 'schemas/user.yaml#/operations/user'
+#  /users/{user_id}/notifications:
+#    $ref: 'schemas/user.yaml#/operations/notifications'
+#  /users/{user_id}/settings:
+#    $ref: 'schemas/user.yaml#/operations/settings'
+#  /users/{user_id}/timeline:
+#    $ref: 'schemas/user.yaml#/operations/timeline'
+#
+#  # monitor
+#  /app/monitors/{monitor_id}/attributes:
+#    $ref: 'schemas/monitor.yaml#/operations/attributes'
+#  /app/monitors/{monitor_id}/integrations:
+#    $ref: 'schemas/monitor.yaml#/operations/integrations'
+#  /app/monitors/{monitor_id}/overview:
+#    $ref: 'schemas/monitor.yaml#/operations/overview'
+#  /app/monitors/{monitor_id}/data_sharing:
+#    $ref: 'schemas/monitor.yaml#/operations/data_sharing'
+#  /app/monitors/{monitor_id}/device_inventory:
+#    $ref: 'schemas/monitor.yaml#/operations/device_inventory'
+#  /app/monitors/{monitor_id}/labs_content:
+#    $ref: 'schemas/labs.yaml#/operations/labs_content'
+#  /app/monitors/{monitor_id}/rate_zones:
+#    $ref: 'schemas/monitor.yaml#/operations/rates_zones'
+#  /app/monitors/{monitor_id}/solar_specs:
+#    $ref: 'schemas/monitor.yaml#/operations/solar_specs'
+#  /app/monitors/{monitor_id}/status:
+#    $ref: 'schemas/monitor.yaml#/operations/status'
+#  /app/monitors/attributes/options:
+#    $ref: 'schemas/monitor.yaml#/operations/attributes_options'
+#
+#  # devices
+#  /app/monitors/{monitor_id}/devices/always_on:
+#    $ref: 'schemas/devices.yaml#/operations/always_on'
+#  /app/monitors/{monitor_id}/devices/battery:
+#    $ref: 'schemas/devices.yaml#/operations/battery'
+#  /app/monitors/{monitor_id}/devices/inverter:
+#    $ref: 'schemas/devices.yaml#/operations/inverter'
+  /app/monitors/{monitor_id}/devices/overview:
+    #$ref: 'schemas/devices.yaml#/components/paths/overview'
+    parameters:
+    - name: monitor_id
+      in: path
+      required: true
+      schema:
+        type: integer
+    get:
+      operationId: GetDevices
+      description: 'Get all devices'
+      parameters:
+      - name: include_merged
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/device'
+                  device_data_checksum:
+                    type: string
+
+#  /app/monitors/devicetypes:
+#    $ref: 'schemas/devices.yaml#/operations/devicetypes'
+#
+#  # history
+#  /app/history/trends:
+#    $ref: 'schemas/history.yaml#/operations/trends'
+#  /app/history/cumulative:
+#    $ref: 'schemas/history.yaml#/operations/cumulative'
+#  /app/history/comparisons:
+#    $ref: 'schemas/history.yaml#/operations/comparisons'
+#
+#  # app
+#  /app/electricty_cost:
+#    $ref: 'schemas/app.yaml#/electricity_cost'
+#
+

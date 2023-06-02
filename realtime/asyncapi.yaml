@@ -1,0 +1,287 @@
+asyncapi: 2.6.0
+info:
+  title: Sense realtime API
+  description: -|
+    This is an UNOFFICIAL and UNSUPPORTED definition of the Sense real-time update API.
+    It may stop working at any time without notice.
+  version: 0.0.1
+id: https://github.com/dnesting/sense
+
+servers:
+  production:
+    url: clientrt.sense.com
+    protocol: ws
+    security: []
+    # Note: Sense implements their own artisinal Oauth flow, so we can't reference a standard scheme here.
+defaultContentType: application/json
+
+channels:
+  "/monitors/{monitor_id}/realtimefeed":
+    parameters:
+      monitor_id:
+        schema:
+          type: integer
+    
+    publish:
+      operationId: realtimefeed
+      message:
+        $ref: '#/components/messages/realtime_message'
+      bindings:
+        bindingVersion: 0.1.0
+        method: GET
+        query:
+          $ref: '#/components/schemas/query'
+
+components:
+  messages:
+    realtime_message:
+      messageId: realtime_message
+      payload:
+        oneOf:
+          - $ref: '#/components/schemas/hello'
+          - $ref: '#/components/schemas/monitor_info'
+          - $ref: '#/components/schemas/data_change'
+          - $ref: '#/components/schemas/device_states'
+          - $ref: '#/components/schemas/realtime_update'
+
+  schemas:
+    query:
+      type: object
+      properties:
+        access_token:
+          type: string
+        sense_device_id:
+          type: string
+        sense_protocol:
+          type: integer
+        sense_client_type:
+          type: string
+        sense_ui_language:
+          type: string
+      required: [access_token]
+
+    hello_payload:
+      type: object
+      properties:
+        online:
+          type: boolean
+      required: [online]
+
+    hello:
+      type: object
+      properties:
+        type:
+          type: string
+          const: hello
+        payload:
+          $ref: '#/components/schemas/hello_payload'
+      required: [type, payload]
+
+    monitor_info_payload:
+      type: object
+      properties:
+        features:
+          type: string
+      required: [features]
+
+    monitor_info:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - monitor_info
+        payload:
+          $ref: '#/components/schemas/monitor_info_payload'
+      required: [type, payload]
+
+    data_change_payload:
+      type: object
+      properties:
+        features:
+          type: string
+        device_data_checksum:
+          type: string
+        monitor_overview_checksum:
+          type: string
+        partner_checksum:
+          type: string
+        pending_events:
+          $ref: '#/components/schemas/GoalEvent'
+        settings_version:
+          type: integer
+        user_version:
+          type: integer
+      required:
+      - features
+      - device_data_checksum
+      - monitor_overview_checksum
+      - partner_checksum
+      - pending_events
+      - settings_version
+      - user_version
+
+    data_change:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - data_change
+        payload:
+          $ref: '#/components/schemas/data_change_payload'
+      required: [type, payload]
+
+    Goal:
+      type: object
+      properties:
+        guid:
+          type: string
+        notification_id:
+          type: "null"
+        timestamp:
+          type: "null"
+
+    device_found:
+      type: object
+      properties:
+        device_id:
+          type: string
+        guid:
+          type: string
+        timestamp:
+          type: "null"
+
+    GoalEvent:
+      type: object
+      properties:
+        type:
+          type: string
+          const: GoalEvent
+        goal:
+          $ref: '#/components/schemas/Goal'
+        monitor_id:
+          type: integer
+        new_device_found:
+          $ref: '#/components/schemas/device_found'
+
+    device_state:
+      type: object
+      properties:
+        device_id:
+          type: string
+        mode:
+          type: string 
+          #enum: [off, active]
+        state:
+          type: string
+          #enum: [online]
+
+    device_states_payload:
+          type: object
+          properties:
+            states:
+              type: array
+              items:
+                $ref: '#/components/schemas/device_state'
+            update_type:
+              type: string
+              #enum: [full]
+          required: [states, update_type]
+            
+    device_states:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - device_states
+        payload:
+          $ref: '#/components/schemas/device_states_payload'
+      required: [type, payload]
+
+    realtime_update_payload:
+          type: object
+          properties:
+            c:
+              type: integer
+            channels:
+              type: array
+              items:
+                type: number
+            d_w:
+              type: integer
+            defaultCost:
+              type: number
+            deltas:
+              type: array
+              items:
+                type: "null"
+            devices:
+              type: array
+              items:
+                $ref: '#/components/schemas/realtime_device'
+            epoch:
+              type: integer
+            frame:
+              type: integer
+            grid_w:
+              type: number
+            hz:
+              type: number
+            power_flow:
+              type: object
+              properties:
+                grid:
+                  type: array
+                  items:
+                    type: string
+            voltage:
+              type: array
+              items:
+                type: number
+            w:
+              type: number
+            _stats:
+              type: object
+              properties:
+                brcv:
+                  type: number
+                mrcv:
+                  type: number
+                msnd:
+                  type: number
+          required: [w]
+
+    realtime_update:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - realtime_update
+        payload:
+          $ref: '#/components/schemas/realtime_update_payload'
+      required: [type, payload]
+            
+    realtime_device:
+      type: object
+      properties:
+        attrs:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        icon:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+        w:
+          type: number
+      required: [id]
