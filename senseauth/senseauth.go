@@ -182,18 +182,24 @@ func (c Config) PasswordCredentialsToken(ctx context.Context, creds PasswordCred
 	return withExtras(tok, deref(data.UserId)), httpResponse, nil
 }
 
+const senseUserIdKey = "github.com/dnesting/sense/senseauth/sense_user_id"
+
 func withExtras(tok *oauth2.Token, userID int) *oauth2.Token {
+	debugf("senseauth: caching user ID %d with token", userID)
 	return tok.WithExtra(map[string]interface{}{
-		"sense_user_id": userID,
+		senseUserIdKey: userID,
 	})
 }
 
-func fromExtras(tok *oauth2.Token) (userID *int) {
-	if tok == nil {
-		return nil
+func fromExtras(tok *oauth2.Token) (userID int) {
+	if tok != nil {
+		if userID, ok := tok.Extra(senseUserIdKey).(int); ok {
+			debugf("senseauth: got user ID %d from token", userID)
+			return userID
+		}
 	}
-	userID, _ = tok.Extra("sense_user_id").(*int)
-	return
+	debugf("senseauth: no user ID in token")
+	return 0
 }
 
 // TokenSource returns a token source that will renew the token when needed.
@@ -273,7 +279,7 @@ func (t *TokenSource) TokenContext(ctx context.Context) (*oauth2.Token, error) {
 		return t.tok, nil
 	}
 	userID := fromExtras(t.tok)
-	if userID == nil || *userID == 0 {
+	if userID == 0 {
 		// The Sense OAuth implementation seems to require a user ID to accompany
 		// token renewals.  Since we don't want to connect this package to the main
 		// sense package (where this data value would live), we smuggle it in the
@@ -281,7 +287,7 @@ func (t *TokenSource) TokenContext(ctx context.Context) (*oauth2.Token, error) {
 		panic("senseauth: token was not generated correctly")
 	}
 	req := client.RenewAuthTokenFormdataRequestBody{
-		UserId:        userID,
+		UserId:        &userID,
 		RefreshToken:  &t.tok.RefreshToken,
 		IsAccessToken: ptr(true),
 	}
@@ -297,7 +303,7 @@ func (t *TokenSource) TokenContext(ctx context.Context) (*oauth2.Token, error) {
 		RefreshToken: deref(data.RefreshToken),
 		Expiry:       deref(data.Expires),
 	}
-	return withExtras(tok, *userID), nil
+	return withExtras(tok, userID), nil
 }
 
 // This seems to be roughly when tokens seem to expire
@@ -320,7 +326,7 @@ func guessExpiry(tok string) time.Time {
 					secs, err := strconv.ParseInt(m[1], 10, 64)
 					if err == nil {
 						t := time.Unix(secs, 0)
-						debug("senseauth: using expiry from token:", t)
+						debug("senseauth: using expiry from token: ", time.Until(t))
 						return t
 					}
 				}
