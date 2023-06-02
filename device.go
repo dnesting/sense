@@ -7,10 +7,12 @@ import (
 )
 
 type Device struct {
-	ID   string
-	Name string
-	Type string
-	Make string
+	ID       string
+	Name     string
+	Type     string
+	Make     string
+	Model    string
+	Location string
 }
 
 // I'm not entirely sure what the relationship between these fields is, so
@@ -50,10 +52,12 @@ func (s *Client) GetDevices(ctx context.Context, monitorID int, includeMerged bo
 	}
 	for _, d := range deref(res.JSON200.Devices) {
 		devs = append(devs, Device{
-			ID:   deref(d.Id),
-			Name: deref(d.Name),
-			Type: getType(d),
-			Make: stringOrEmpty(deref(d.Tags)["Make"]),
+			ID:       deref(d.Id),
+			Name:     deref(d.Name),
+			Type:     getType(d),
+			Make:     deref(d.Make),
+			Model:    deref(d.Model),
+			Location: deref(d.Location),
 		})
 	}
 	return devs, nil

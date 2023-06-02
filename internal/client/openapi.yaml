@@ -124,6 +124,12 @@ components:
           type: string
         name:
           type: string
+        make:
+          type: string
+        model:
+          type: string
+        location:
+          type: string
         icon:
           type: string
         tags:

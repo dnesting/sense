@@ -18,10 +18,13 @@ import (
 
 // Device defines model for device.
 type Device struct {
-	Icon *string     `json:"icon,omitempty"`
-	Id   *string     `json:"id,omitempty"`
-	Name *string     `json:"name,omitempty"`
-	Tags *DeviceTags `json:"tags,omitempty"`
+	Icon     *string     `json:"icon,omitempty"`
+	Id       *string     `json:"id,omitempty"`
+	Location *string     `json:"location,omitempty"`
+	Make     *string     `json:"make,omitempty"`
+	Model    *string     `json:"model,omitempty"`
+	Name     *string     `json:"name,omitempty"`
+	Tags     *DeviceTags `json:"tags,omitempty"`
 }
 
 // DeviceTags defines model for device_tags.
