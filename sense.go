@@ -14,7 +14,6 @@ import (
 	"github.com/dnesting/sense/internal/client"
 	"github.com/dnesting/sense/internal/ratelimited"
 	"github.com/dnesting/sense/senseauth"
-	"golang.org/x/oauth2"
 	"golang.org/x/time/rate"
 )
 
@@ -215,12 +214,10 @@ func (s *Client) Authenticate(ctx context.Context, creds Credentials) error {
 	}
 
 	// We have an authentication token, so we can now build the HTTP client
-	// that we want our Sense client to use.  We'll express this as an HTTP
-	// client option to newClient but we don't want to modify the user's
-	// expressed httpClient option, so let's make a copy.
-	opt := s.opt
+	// that we want our Sense client to use.
+	opt := s.opt // copy because we'll be overriding things we don't want to be persistent
 	tokenSrc := config.TokenSource(tok)
-	opt.httpClient = oauth2.NewClient(context.Background(), tokenSrc)
+	opt.httpClient = senseauth.NewClientFrom(opt.httpClient, tokenSrc)
 
 	// Re-create the clients using this new authenticated HTTP client.
 	s.client = newInternalClient(&opt)
