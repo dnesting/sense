@@ -415,13 +415,14 @@ func messageLoop(ctx context.Context, ws Conn, callback Callback) error {
 				return readErr
 			}
 			err := func() error {
-				ctx, span := otel.Tracer(traceName).Start(ctx, fmt.Sprintf("Handle realtime %T", msg))
+				ctx, span := otel.Tracer(traceName).Start(ctx, fmt.Sprintf("Handle %T", msg))
 				defer span.End()
 				span.SetAttributes(attribute.String("message.type", msg.GetType()))
 				debugf("running callback for %T", msg)
 				if err := callback(ctx, msg); err != nil {
 					if err == Stop {
-						return ws.Close(websocket.StatusNormalClosure, "")
+						ws.Close(websocket.StatusNormalClosure, "")
+						return nil
 					}
 					ws.Close(websocket.StatusInternalError, "")
 					return err
