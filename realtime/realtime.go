@@ -36,9 +36,13 @@ import (
 	"strconv"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/oauth2"
 	"nhooyr.io/websocket"
 )
+
+const traceName = "github.com/dnesting/sense/realtime"
 
 // hello
 
@@ -410,12 +414,21 @@ func messageLoop(ctx context.Context, ws Conn, callback Callback) error {
 			if !ok {
 				return readErr
 			}
-			debugf("running callback for %T", msg)
-			if err := callback(ctx, msg); err != nil {
-				if err == Stop {
-					return ws.Close(websocket.StatusNormalClosure, "")
+			err := func() error {
+				ctx, span := otel.Tracer(traceName).Start(ctx, fmt.Sprintf("Handle realtime %T", msg))
+				defer span.End()
+				span.SetAttributes(attribute.String("message.type", msg.GetType()))
+				debugf("running callback for %T", msg)
+				if err := callback(ctx, msg); err != nil {
+					if err == Stop {
+						return ws.Close(websocket.StatusNormalClosure, "")
+					}
+					ws.Close(websocket.StatusInternalError, "")
+					return err
 				}
-				ws.Close(websocket.StatusInternalError, "")
+				return nil
+			}()
+			if err != nil {
 				return err
 			}
 		}
@@ -426,8 +439,12 @@ func messageLoop(ctx context.Context, ws Conn, callback Callback) error {
 // callback for each message received.  The callback can return the sentinel
 // error [Stop] to stop the stream.
 func (c *Client) Stream(ctx context.Context, monitorID int, callback Callback) error {
+	ctx, span := otel.Tracer(traceName).Start(ctx, "Stream")
+	defer span.End()
+
 	uri, opts, err := c.buildRequest(monitorID)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -439,12 +456,18 @@ func (c *Client) Stream(ctx context.Context, monitorID int, callback Callback) e
 	debugf("dialing %q", uri)
 	ws, _, err := dialer.Dial(ctx, uri, &opts)
 	if err != nil {
-		return fmt.Errorf("dial %q: %w", uri, err)
+		err = fmt.Errorf("dial %q: %w", uri, err)
+		span.RecordError(err)
+		return err
 	}
 
-	err = messageLoop(ctx, ws, callback)
-	if err == io.EOF {
-		err = nil
+	if err = messageLoop(ctx, ws, callback); err != nil {
+		if err == io.EOF {
+			err = nil
+		} else {
+			span.RecordError(err)
+			return err
+		}
 	}
-	return err
+	return nil
 }

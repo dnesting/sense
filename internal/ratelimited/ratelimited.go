@@ -4,7 +4,11 @@ package ratelimited
 import (
 	"context"
 	"net/http"
+
+	"go.opentelemetry.io/otel"
 )
+
+const traceName = "github.com/dnesting/sense"
 
 // Limiter is a function that is expected to wait until rate limiting
 // conditions have been met.  The implementation should return early
@@ -24,9 +28,13 @@ type Transport struct {
 func (t *Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 	// Apply the rate limit for this Transport.
 	if t.L != nil {
-		if err := t.L(r.Context()); err != nil {
+		ctx, span := otel.Tracer(traceName).Start(r.Context(), "rate limit")
+		if err := t.L(ctx); err != nil {
+			span.RecordError(err)
+			span.End()
 			return nil, err
 		}
+		span.End()
 	}
 	base := t.Base
 	if base == nil {

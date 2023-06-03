@@ -14,6 +14,7 @@ import (
 	"github.com/dnesting/sense/internal/client"
 	"github.com/dnesting/sense/internal/ratelimited"
 	"github.com/dnesting/sense/senseauth"
+	"go.opentelemetry.io/otel"
 	"golang.org/x/time/rate"
 )
 
@@ -21,6 +22,7 @@ const (
 	defaultApiRoot   = "https://api.sense.com/apiservice/api/v1/"
 	defaultRateLimit = rate.Limit(time.Second / 10) // arbitrarily chosen
 	userAgent        = "go-sense-library (github.com/dnesting/sense)"
+	traceName        = "github.com/dnesting/sense"
 )
 
 // Client is the primary high-level object used to interact with the Sense API.
@@ -189,6 +191,9 @@ var ErrAuthenticationNeeded = client.ErrAuthenticationNeeded
 // the user is authenticated.  This package can generate an HTTP client
 // that you can use here with [WithHttpClient].
 func (s *Client) Authenticate(ctx context.Context, creds Credentials) error {
+	ctx, span := otel.Tracer(traceName).Start(ctx, "Authenticate")
+	defer span.End()
+
 	// reset to unauthenticated state
 	s.client = newInternalClient(&s.opt)
 	s.realtimeClient = newRealtimeClient(&s.opt, nil)

@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"github.com/dnesting/sense/internal/client"
+	"go.opentelemetry.io/otel"
 	"golang.org/x/oauth2"
 )
 
@@ -110,6 +111,8 @@ func (c *Config) getClient() internalClient {
 	return cl
 }
 
+const traceName = "github.com/dnesting/sense/senseauth"
+
 // PasswordCredentialsToken authenticates with the given email and password, and
 // returns the token.
 // Since Sense provides additional information in the authentication response,
@@ -119,6 +122,8 @@ func (c *Config) getClient() internalClient {
 // not nil, it will be called to obtain the MFA code.
 // If this returns an error, the authentication will be aborted.
 func (c Config) PasswordCredentialsToken(ctx context.Context, creds PasswordCredentials) (tok *oauth2.Token, httpResponse *http.Response, err error) {
+	ctx, span := otel.Tracer(traceName).Start(ctx, "PasswordCredentialsToken")
+	defer span.End()
 	if debugging() {
 		defer func() {
 			if err != nil {
@@ -148,31 +153,51 @@ func (c Config) PasswordCredentialsToken(ctx context.Context, creds PasswordCred
 	if err != nil {
 		return nil, nil, fmt.Errorf("senseauth: parse authenticate response: %w", err)
 	}
+
 	if res.StatusCode() == http.StatusUnauthorized && res.JSON401.MfaToken != nil {
-		// We need MFA
-		if creds.MfaFn == nil {
-			return nil, nil, fmt.Errorf("%w: %s", ErrMFANeeded, creds.Email)
-		}
-		debug("senseauth: calling MFA function")
-		mfaValue, err := creds.MfaFn(ctx)
+		// Server is requesting an MFA code
+		err := func() error {
+			ctx, span := otel.Tracer(traceName).Start(ctx, "With MFA")
+			defer span.End()
+			// We need MFA
+			if creds.MfaFn == nil {
+				err = fmt.Errorf("%w: %s", ErrMFANeeded, creds.Email)
+				span.RecordError(err)
+				return err
+			}
+			debug("senseauth: calling MFA function")
+			mfaValue, err := creds.MfaFn(ctx)
+			if err != nil {
+				err = fmt.Errorf("senseauth: mfa: %w", err)
+				span.RecordError(err)
+				return err
+			}
+			request.MfaToken = res.JSON401.MfaToken
+			request.Totp = &mfaValue
+			res, err = cl.AuthenticateWithFormdataBodyWithResponse(ctx, request)
+			if err != nil {
+				err = fmt.Errorf("senseauth: authenticate with mfa: %w", err)
+				span.RecordError(err)
+				return err
+			}
+			return nil
+		}()
 		if err != nil {
-			return nil, nil, fmt.Errorf("senseauth: mfa: %w", err)
-		}
-		request.MfaToken = res.JSON401.MfaToken
-		request.Totp = &mfaValue
-		res, err = cl.AuthenticateWithFormdataBodyWithResponse(ctx, request)
-		if err != nil {
-			return nil, nil, fmt.Errorf("senseauth: authenticate with mfa: %w", err)
+			return nil, nil, err
 		}
 	}
 
 	if err := client.Ensure(nil, "", res, 200); err != nil {
-		return nil, nil, fmt.Errorf("senseauth: %w", err)
+		err = fmt.Errorf("senseauth: authenticate: %w", err)
+		span.RecordError(err)
+		return nil, nil, err
 	}
 	data := res.JSON200
 	httpResponse.Body = io.NopCloser(strings.NewReader(string(body)))
 	if deref(data.AccessToken) == "" {
-		return nil, httpResponse, fmt.Errorf("senseauth: %s: not authorized", creds.Email)
+		err = fmt.Errorf("senseauth: %s: not authorized", creds.Email)
+		span.RecordError(err)
+		return nil, httpResponse, err
 	}
 	tok = &oauth2.Token{
 		AccessToken:  deref(data.AccessToken),
@@ -286,6 +311,8 @@ func (t *TokenSource) TokenContext(ctx context.Context) (*oauth2.Token, error) {
 		// token's extra data.  If it's not there, we can't renew the token.
 		panic("senseauth: token was not generated correctly")
 	}
+	ctx, span := otel.Tracer(traceName).Start(ctx, "Renew auth token")
+	defer span.End()
 	req := client.RenewAuthTokenFormdataRequestBody{
 		UserId:        &userID,
 		RefreshToken:  &t.tok.RefreshToken,
@@ -293,6 +320,7 @@ func (t *TokenSource) TokenContext(ctx context.Context) (*oauth2.Token, error) {
 	}
 	res, err1 := t.client.RenewAuthTokenWithFormdataBodyWithResponse(ctx, req)
 	if err := client.Ensure(err1, "RenewAuthToken", res, 200); err != nil {
+		span.RecordError(err)
 		return nil, fmt.Errorf("senseauth: %w", err)
 	}
 	data := res.JSON200
