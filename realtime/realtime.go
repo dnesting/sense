@@ -419,17 +419,14 @@ func messageLoop(ctx context.Context, ws Conn, callback Callback) error {
 				defer span.End()
 				span.SetAttributes(attribute.String("message.type", msg.GetType()))
 				debugf("running callback for %T", msg)
-				if err := callback(ctx, msg); err != nil {
-					if err == Stop {
-						ws.Close(websocket.StatusNormalClosure, "")
-						return nil
-					}
-					ws.Close(websocket.StatusInternalError, "")
-					return err
-				}
-				return nil
+				return callback(ctx, msg)
 			}()
 			if err != nil {
+				if err == Stop {
+					ws.Close(websocket.StatusNormalClosure, "")
+					return nil
+				}
+				ws.Close(websocket.StatusInternalError, "")
 				return err
 			}
 		}
