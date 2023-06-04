@@ -332,7 +332,9 @@ func (t *TokenSource) TokenContext(ctx context.Context) (*oauth2.Token, error) {
 		RefreshToken: deref(data.RefreshToken),
 		Expiry:       deref(data.Expires),
 	}
-	return withExtras(tok, userID), nil
+	tok = withExtras(tok, userID)
+	t.tok = tok
+	return tok, nil
 }
 
 // This seems to be roughly when tokens seem to expire
