@@ -26,6 +26,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -354,8 +355,13 @@ func guessExpiry(tok string) time.Time {
 					secs, err := strconv.ParseInt(m[1], 10, 64)
 					if err == nil {
 						t := time.Unix(secs, 0)
-						debug("senseauth: using expiry from token: ", time.Until(t))
-						return t
+						until := time.Until(t)
+						if until > 10*time.Minute { // sanity check, we don't actually know if any of this is right
+							debug("senseauth: using expiry from token: ", time.Until(t))
+							return t
+						} else {
+							log.Printf("senseauth: embedded expiry is suspiciously soon, ignoring: %s", until)
+						}
 					}
 				}
 			}
