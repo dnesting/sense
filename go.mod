@@ -20,9 +20,9 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0
 	go.opentelemetry.io/otel v1.16.0
-	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/time v0.3.0
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	nhooyr.io/websocket v1.8.11
 )
