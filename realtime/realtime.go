@@ -36,10 +36,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/coder/websocket"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/oauth2"
-	"nhooyr.io/websocket"
 )
 
 const traceName = "github.com/dnesting/sense/realtime"
