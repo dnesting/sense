@@ -82,5 +82,5 @@ require (
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/time v0.6.0
 	google.golang.org/protobuf v1.31.0 // indirect
-	nhooyr.io/websocket v1.8.11
+	nhooyr.io/websocket v1.8.17
 )
