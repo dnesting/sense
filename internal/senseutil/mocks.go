@@ -5,8 +5,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/coder/websocket"
 	"github.com/dnesting/sense/realtime"
-	"nhooyr.io/websocket"
 )
 
 type MockTransport struct {

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/coder/websocket"
 	"github.com/dnesting/sense/internal/senseutil"
 	"github.com/dnesting/sense/realtime"
 	"github.com/dnesting/sense/senseauth"
-	"nhooyr.io/websocket"
 )
 
 type msg = senseutil.WSMsg
