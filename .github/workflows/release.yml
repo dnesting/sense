@@ -4,6 +4,9 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: write
+
 jobs:
   test:
     name: Test before release
@@ -76,11 +79,12 @@ jobs:
         go build -v -ldflags="-s -w" -o "dist/${BINARY_NAME}" ./cmd/dummy
         
     - name: Upload release assets
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./dist/sense-dummy-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
-        asset_name: sense-dummy-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
-        asset_content_type: application/octet-stream
+      run: |
+        if [ "${{ matrix.goos }}" = "windows" ]; then
+          BINARY_NAME="sense-dummy-${{ matrix.goos }}-${{ matrix.goarch }}.exe"
+        else
+          BINARY_NAME="sense-dummy-${{ matrix.goos }}-${{ matrix.goarch }}"
+        fi
+        gh release upload ${{ github.event.release.tag_name }} "dist/${BINARY_NAME}" --clobber

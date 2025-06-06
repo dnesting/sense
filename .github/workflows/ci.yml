@@ -11,6 +11,9 @@ on:
       - 'go.sum'
       - '.github/workflows/ci.yml'
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test
