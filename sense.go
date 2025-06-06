@@ -30,13 +30,28 @@ const (
 // Instantiate a Client using [New] or [Connect].
 type Client struct {
 	// Account fields are set after successful authentication.
-	UserID    int
-	AccountID int
-	Monitors  []Monitor
+	userID    int
+	accountID int
+	monitors  []Monitor
 
 	client         internalClient
 	realtimeClient internalRealtimeClient
 	opt            newOptions
+}
+
+// GetUserID returns the user ID associated with this client.
+func (c *Client) GetUserID() int {
+	return c.userID
+}
+
+// GetAccountID returns the account ID associated with this client.
+func (c *Client) GetAccountID() int {
+	return c.accountID
+}
+
+// GetMonitors returns the monitors associated with this client.
+func (c *Client) GetMonitors() []Monitor {
+	return c.monitors
 }
 
 // Monitor is a Sense monitor, which is a physical device that measures power usage.
@@ -197,6 +212,9 @@ func (s *Client) Authenticate(ctx context.Context, creds Credentials) error {
 	// reset to unauthenticated state
 	s.client = newInternalClient(&s.opt)
 	s.realtimeClient = newRealtimeClient(&s.opt, nil)
+	s.userID = 0
+	s.accountID = 0
+	s.monitors = nil
 	if creds == nil {
 		return nil
 	}
@@ -228,10 +246,10 @@ func (s *Client) Authenticate(ctx context.Context, creds Credentials) error {
 	s.client = newInternalClient(&opt)
 	s.realtimeClient = newRealtimeClient(&opt, tokenSrc)
 
-	s.UserID = deref(hello.UserId)
-	s.AccountID = deref(hello.AccountId)
+	s.userID = deref(hello.UserId)
+	s.accountID = deref(hello.AccountId)
 	for _, m := range deref(hello.Monitors) {
-		s.Monitors = append(s.Monitors, Monitor{
+		s.monitors = append(s.monitors, Monitor{
 			ID:           deref(m.Id),
 			SerialNumber: deref(m.SerialNumber),
 		})

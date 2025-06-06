@@ -38,9 +38,9 @@ func main() {
 	}
 
 	for _, client := range clients {
-		fmt.Println("account:", client.AccountID)
+		fmt.Println("account:", client.GetAccountID())
 		fmt.Println("monitors:")
-		for _, monitor := range client.Monitors {
+		for _, monitor := range client.GetMonitors() {
 			fmt.Println("- monitor: ", monitor.ID, monitor.SerialNumber)
 			var count = 3
 			fn := func(_ context.Context, msg realtime.Message) error {

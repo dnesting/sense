@@ -26,8 +26,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Monitors configured under account", client.AccountID)
-	for _, m := range client.Monitors {
+	fmt.Println("Monitors configured under account", client.GetAccountID())
+	for _, m := range client.GetMonitors() {
 		fmt.Println("-", m.ID)
 
         // Use the realtime Stream API to grab one data point.

@@ -9,7 +9,20 @@ import (
 )
 
 func TestClient(t *testing.T) {
-	// TODO
+	// Test that an unauthenticated client returns zero values
+	client := sense.New()
+
+	if userID := client.GetUserID(); userID != 0 {
+		t.Errorf("Expected GetUserID() to return 0 for unauthenticated client, got %d", userID)
+	}
+
+	if accountID := client.GetAccountID(); accountID != 0 {
+		t.Errorf("Expected GetAccountID() to return 0 for unauthenticated client, got %d", accountID)
+	}
+
+	if monitors := client.GetMonitors(); monitors != nil {
+		t.Errorf("Expected GetMonitors() to return nil for unauthenticated client, got %v", monitors)
+	}
 }
 
 func doSomethingWith(c *sense.Client) {}
