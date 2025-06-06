@@ -42,8 +42,13 @@ jobs:
     - name: Run go vet
       run: go vet ./...
 
-    - name: Run tests with coverage
+    - name: Run tests with coverage (Unix)
+      if: runner.os != 'Windows'
       run: go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
+      
+    - name: Run tests (Windows)
+      if: runner.os == 'Windows'
+      run: go test -v -race ./...
 
     - name: Build dummy command
       run: go build -v ./cmd/dummy
