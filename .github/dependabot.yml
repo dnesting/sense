@@ -4,46 +4,16 @@
 
 version: 2
 updates:
-  # Security updates - daily schedule with high priority
+  # Go modules updates with intelligent grouping
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "daily"
       time: "04:00"
       timezone: "UTC"
-    versioning-strategy: "increase"
-    open-pull-requests-limit: 5
-    labels:
-      - "security"
-      - "dependencies"
-      - "priority:high"
-    commit-message:
-      prefix: "security"
-      prefix-development: "security(dev)"
-      include: "scope"
-    # Only process security updates in this configuration
-    allow:
-      - dependency-type: "all"
-        update-type: "security"
-    assignees:
-      - "dnesting"
-    reviewers:
-      - "dnesting"
-    rebase-strategy: "auto"
-
-  # Regular version updates - weekly with intelligent grouping
-  - package-ecosystem: "gomod"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "04:00"
-      timezone: "UTC"
-    versioning-strategy: "auto"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
-      - "version-update"
     commit-message:
       prefix: "deps"
       prefix-development: "deps(dev)"
@@ -56,10 +26,6 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # Exclude security updates (handled by security configuration above)
-    ignore:
-      - dependency-name: "*"
-        update-types: ["security"]
     assignees:
       - "dnesting"
     reviewers:
