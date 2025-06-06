@@ -1,11 +1,63 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
+# Dependabot configuration for intelligent dependency updates
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 version: 2
 updates:
-  - package-ecosystem: "gomod" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  # Security updates - daily schedule with high priority
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "04:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "security"
+      - "dependencies"
+      - "priority:high"
+    commit-message:
+      prefix: "security"
+      prefix-development: "security(dev)"
+      include: "scope"
+    # Only process security updates in this configuration
+    allow:
+      - dependency-type: "all"
+        update-type: "security"
+    assignees:
+      - "dnesting"
+    reviewers:
+      - "dnesting"
+
+  # Regular version updates - weekly with intelligent grouping  
+  - package-ecosystem: "gomod"
+    directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "version-update"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps(dev)"
+      include: "scope"
+    # Group minor and patch updates together, major updates get individual PRs
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"  
+          - "patch"
+    # Exclude security updates (handled by security configuration above)
+    ignore:
+      - dependency-name: "*"
+        update-types: ["security"]
+    assignees:
+      - "dnesting"  
+    reviewers:
+      - "dnesting"
+    rebase-strategy: "auto"
