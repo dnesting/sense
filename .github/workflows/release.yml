@@ -5,11 +5,11 @@ on:
     types: [created]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  test:
-    name: Test before release
+  validate:
+    name: Validate release
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
@@ -39,52 +39,5 @@ jobs:
     - name: Run govulncheck
       run: govulncheck ./...
 
-  build:
-    name: Build release binaries
-    runs-on: ubuntu-latest
-    needs: test
-    strategy:
-      matrix:
-        goos: [linux, windows, darwin]
-        goarch: [amd64, arm64]
-        exclude:
-          # Windows ARM64 support is limited
-          - goos: windows
-            goarch: arm64
-    
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.23'
-        cache: true
-
-    - name: Download dependencies
-      run: go mod download
-
-    - name: Build binary
-      env:
-        GOOS: ${{ matrix.goos }}
-        GOARCH: ${{ matrix.goarch }}
-      run: |
-        mkdir -p dist
-        if [ "${{ matrix.goos }}" = "windows" ]; then
-          BINARY_NAME="sense-dummy-${{ matrix.goos }}-${{ matrix.goarch }}.exe"
-        else
-          BINARY_NAME="sense-dummy-${{ matrix.goos }}-${{ matrix.goarch }}"
-        fi
-        go build -v -ldflags="-s -w" -o "dist/${BINARY_NAME}" ./cmd/dummy
-        
-    - name: Upload release assets
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        if [ "${{ matrix.goos }}" = "windows" ]; then
-          BINARY_NAME="sense-dummy-${{ matrix.goos }}-${{ matrix.goarch }}.exe"
-        else
-          BINARY_NAME="sense-dummy-${{ matrix.goos }}-${{ matrix.goarch }}"
-        fi
-        gh release upload ${{ github.event.release.tag_name }} "dist/${BINARY_NAME}" --clobber
+    - name: Test build (dummy command)
+      run: go build -v ./cmd/dummy
