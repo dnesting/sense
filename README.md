@@ -89,21 +89,3 @@ If you need the gory internals to figure something out:
 httpClient := sense.SetDebug(log.Default(), nil)
 client, err := sense.Connect(ctx, credentials, sense.WithHTTPClient(httpClient))
 ```
-
-## Development
-
-### CI/CD
-
-This repository uses GitHub Actions for continuous integration and release validation:
-
-- **Pull Request Checks**: All PRs are automatically tested on multiple Go versions (1.22, 1.23) and platforms (Linux, Windows, macOS). The CI runs tests, vet, format checks, and security vulnerability scanning.
-
-- **Release Validation**: When you create a GitHub release with a tag (e.g., `v1.0.0`), the release workflow validates the code by running the full test suite and security checks to ensure the tagged version is ready for use.
-
-To create a release:
-1. Create a new tag: `git tag v1.0.0`
-2. Push the tag: `git push origin v1.0.0`
-3. Create a GitHub release from the tag
-4. The release workflow will validate the code quality
-
-Users can then import the library using: `go get github.com/dnesting/sense@v1.0.0`
