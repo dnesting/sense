@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/coder/websocket v1.8.13
-	github.com/oapi-codegen/runtime v1.1.1
+	github.com/oapi-codegen/runtime v1.1.2
 	golang.org/x/oauth2 v0.30.0
 	gopkg.in/yaml.v3 v3.0.1
 )
