@@ -34,7 +34,7 @@ func main() {
 		configFile, flagCreds,
 		sense.WithHttpClient(httpClient))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to create clients")
 	}
 
 	for _, client := range clients {
