@@ -1,11 +1,11 @@
 module github.com/dnesting/sense
 
-go 1.25.13
+go 1.26.0
 
 require (
 	github.com/coder/websocket v1.8.15
 	github.com/oapi-codegen/runtime v1.7.0
-	golang.org/x/oauth2 v0.36.0
+	golang.org/x/oauth2 v0.37.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -23,5 +23,5 @@ require (
 require (
 	github.com/google/uuid v1.6.0
 	go.opentelemetry.io/otel v1.46.0
-	golang.org/x/time v0.14.0
+	golang.org/x/time v0.16.0
 )
