@@ -44,7 +44,9 @@ jobs:
 
     - name: Run tests with coverage (Unix)
       if: runner.os != 'Windows'
-      run: go test -v -race -covermode=atomic -coverprofile=coverage.out ./...
+      run: |
+        packages=$(go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.ImportPath}}{{end}}' ./... | sed '/^$/d')
+        go test -v -race -covermode=atomic -coverprofile=coverage.out $packages
       
     - name: Run tests (Windows)
       if: runner.os == 'Windows'
